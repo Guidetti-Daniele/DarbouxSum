@@ -73,13 +73,7 @@ void drawLegend() {
    float xDisplacement = round( (screenLimits.right-width/2) / unit);
    float minX = (-xBarlinesCount/2)+xDisplacement;
    float maxX = minX + xBarlinesCount;
-      
-   for(float i = minX; i <= maxX; i++) {
-     if( i == 0) continue;
-     
-     text(String.format("%.1f",i), i*unit, textGap);
-   }
-    
+   
    /*
     Now I have to do the same for the y axis,
     but I have to INVERT THE SIGN
@@ -87,11 +81,30 @@ void drawLegend() {
    float yDisplacement = round( (screenLimits.up-height/2) / unit );
    float maxY = (yBarlinesCount/2)+yDisplacement;
    float minY = maxY - yBarlinesCount;
-  
+      
+      
+   // Drawing grid
+   for(float i = minX; i <= maxX; i++) {
+     if( i == 0) continue;
+     
+     float x = unit*i;
+     stroke(GRID_COLOR);
+     line(x, -(unit*maxY), x, -unit*minY);
+     
+     fill(TEXT_COLOR);
+     String text = String.format("%.1f",i);
+     text(text, x-textWidth(text)/2, textGap);
+   }
+    
   for(float i = minY; i <= maxY; i++) {
     if(i == 0) continue;
     
-    text(String.format("%.1f", i), 0, -i*unit);
+    float y = unit*i;
+    stroke(GRID_COLOR);
+    line(unit*minX, -y, unit*maxX, -y);
+    
+    fill(TEXT_COLOR);
+    text(String.format("%.1f", i), 0, -y+(textSize/4));
   }
    
   popMatrix();
