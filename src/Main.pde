@@ -228,6 +228,8 @@ Direction getDirection(float offsetX, float offsetY) {
 void mouseDragged() {
     
     if(dragPivotPoint == null) return;
+    
+    cursor(MOVE);
   
     float offsetX = mouseX - dragPivotPoint.x;
     float offsetY = mouseY - dragPivotPoint.y;
@@ -257,6 +259,10 @@ void mouseDragged() {
     }
         
     drawView();
+}
+
+void mouseReleased() {
+  cursor(ARROW); 
 }
 
 void keyPressed() {
