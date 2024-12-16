@@ -70,18 +70,19 @@ void drawLegend() {
     I know how many barlines I have to draw on the two axis,
     but I have to get the values of the bounds.
    */
-   float xDisplacement = round( (screenLimits.right-width/2) / unit);
+   float xDisplacement = floor( (screenLimits.right-width/2) / unit);
    float minX = (-xBarlinesCount/2)+xDisplacement;
-   float maxX = minX + xBarlinesCount;
+   float maxX = minX + xBarlinesCount+1;
    
    /*
     Now I have to do the same for the y axis,
     but I have to INVERT THE SIGN
    */
-   float yDisplacement = round( (screenLimits.up-height/2) / unit );
+   float yDisplacement = ceil( (screenLimits.up-height/2) / unit );
    float maxY = (yBarlinesCount/2)+yDisplacement;
-   float minY = maxY - yBarlinesCount;
+   float minY = maxY - yBarlinesCount-1;
       
+  println(yDisplacement);    
       
    // Drawing grid
    for(float i = minX; i <= maxX; i++) {
