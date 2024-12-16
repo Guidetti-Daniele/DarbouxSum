@@ -58,9 +58,17 @@ void drawAxis() {
 float getIncrementer(float numberOfZoomedUnits) {
   
   int numberOfUnitsWithNoZoom = ceil(width/unit);
-  float numberOfTimesHalved = log(numberOfZoomedUnits/numberOfUnitsWithNoZoom) / log(0.5);
-  
-  return pow(0.5, floor(numberOfTimesHalved) );
+  int numberOfTimesHalved = floor( log(numberOfZoomedUnits/numberOfUnitsWithNoZoom) / log(0.5) );
+   
+ if(numberOfTimesHalved == 0) return 1.0;
+ 
+ float incrementer = 1.0;
+ float[] ratios = {0.5, 0.2};
+ 
+ incrementer = (numberOfTimesHalved % 3 != 0) ? ratios[(numberOfTimesHalved % 3)-1] * pow(0.1, numberOfTimesHalved / 3) : pow(0.1, numberOfTimesHalved / 3);
+ println(incrementer);
+ 
+  return incrementer;
 }
 
 void drawLegend() {
@@ -70,7 +78,6 @@ void drawLegend() {
    int yBarlinesCount = ceil(height/zoomedUnit);
    
    float incrementer = getIncrementer(xBarlinesCount);
-   println(incrementer);
    
    final float textDistance = 15;
    float xAxisTextPosition = textDistance;
@@ -218,7 +225,7 @@ void draw() {
 void mouseWheel(MouseEvent event) {
   
   if(event.getCount() > 0) // the wheel goes down
-    zoom = (zoom-zoomAmount) < 0 ? 0 : (zoom-zoomAmount);
+    zoom = (zoom-zoomAmount) < 1 ? 1 : (zoom-zoomAmount);
   else
     zoom += zoomAmount;
       
