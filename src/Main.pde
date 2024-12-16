@@ -55,11 +55,22 @@ void drawAxis() {
   line(0,origin.y,width,origin.y);
 }
 
+float getIncrementer(float numberOfZoomedUnits) {
+  
+  int numberOfUnitsWithNoZoom = ceil(width/unit);
+  float numberOfTimesHalved = log(numberOfZoomedUnits/numberOfUnitsWithNoZoom) / log(0.5);
+  
+  return pow(0.5, floor(numberOfTimesHalved) );
+}
+
 void drawLegend() {
    moveToOrigin();
    float zoomedUnit = unit*zoom;
    int xBarlinesCount = ceil(width/zoomedUnit);
    int yBarlinesCount = ceil(height/zoomedUnit);
+   
+   float incrementer = getIncrementer(xBarlinesCount);
+   println(incrementer);
    
    final float textDistance = 15;
    float xAxisTextPosition = textDistance;
@@ -88,10 +99,6 @@ void drawLegend() {
    float maxX = ceil((xBarlinesCount/2)+xDisplacement);
    float minX = maxX - xBarlinesCount - 1;
    
-   println(xDisplacement);
-   println("min: ", minX);
-   println("max: ", maxX);
-   
    /*
     Now I have to do the same for the y axis,
     but I have to INVERT THE SIGN
@@ -102,7 +109,7 @@ void drawLegend() {
             
    // Drawing grid
    
-   for(float i = minX; i <= maxX; i++) {
+   for(float i = minX; i <= maxX; i+= incrementer) {
      if( i == 0) continue;
      
      float x = zoomedUnit*i;
@@ -114,7 +121,7 @@ void drawLegend() {
      text(text, x-textWidth(text)/2, xAxisTextPosition);
    }
     
-  for(float i = minY; i <= maxY; i++) {
+  for(float i = minY; i <= maxY; i+= incrementer) {
     if(i == 0) continue;
     
     float y = zoomedUnit*i;
