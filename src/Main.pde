@@ -57,8 +57,9 @@ void drawAxis() {
 
 void drawLegend() {
    moveToOrigin();
-   int xBarlinesCount = floor(width/unit);
-   int yBarlinesCount = floor(height/unit);
+   float zoomedUnit = unit*zoom;
+   int xBarlinesCount = ceil(width/zoomedUnit);
+   int yBarlinesCount = ceil(height/zoomedUnit);
    
    final float textDistance = 15;
    float xAxisTextPosition = textDistance;
@@ -83,26 +84,30 @@ void drawLegend() {
     I know how many barlines I have to draw on the two axis,
     but I have to get the values of the bounds.
    */
-   float xDisplacement = floor( (screenLimits.right-width/2) / unit);
-   float minX = (-xBarlinesCount/2)+xDisplacement;
-   float maxX = minX + xBarlinesCount+1;
+   float xDisplacement = (screenLimits.right-width/2) / zoomedUnit;
+   float maxX = ceil((xBarlinesCount/2)+xDisplacement);
+   float minX = maxX - xBarlinesCount - 1;
+   
+   println(xDisplacement);
+   println("min: ", minX);
+   println("max: ", maxX);
    
    /*
     Now I have to do the same for the y axis,
     but I have to INVERT THE SIGN
    */
-   float yDisplacement = ceil( (screenLimits.up-height/2) / unit );
-   float maxY = (yBarlinesCount/2)+yDisplacement;
-   float minY = maxY - yBarlinesCount-1;
+   float yDisplacement = (screenLimits.up-height/2) / zoomedUnit;
+   float maxY = ceil((yBarlinesCount/2)+yDisplacement);
+   float minY = maxY - yBarlinesCount - 1;
             
    // Drawing grid
    
    for(float i = minX; i <= maxX; i++) {
      if( i == 0) continue;
      
-     float x = unit*i;
+     float x = zoomedUnit*i;
      stroke(GRID_COLOR);
-     line(x, -(unit*maxY), x, -unit*minY);
+     line(x, -(zoomedUnit*maxY), x, -zoomedUnit*minY);
      
      fill(TEXT_COLOR);
      String text = String.format("%.1f",i);
@@ -112,9 +117,9 @@ void drawLegend() {
   for(float i = minY; i <= maxY; i++) {
     if(i == 0) continue;
     
-    float y = unit*i;
+    float y = zoomedUnit*i;
     stroke(GRID_COLOR);
-    line(unit*minX, -y, unit*maxX, -y);
+    line(zoomedUnit*minX, -y, zoomedUnit*maxX, -y);
     
     fill(TEXT_COLOR);
     String text = String.format("%.1f", i);
@@ -144,9 +149,11 @@ void drawMyFunction() {
   stroke(FUNCTION_COLOR);
   noFill();
 
+  float zoomedUnit = unit*zoom;
+  
   beginShape();
-  for( float x = screenLimits.left/unit; x <= screenLimits.right/unit; x+= (1/unit))
-    vertex(x*unit, -myFunction(x)*unit); //<>//
+  for( float x = screenLimits.left/zoomedUnit; x <= screenLimits.right/zoomedUnit; x+= (1/zoomedUnit))
+    vertex(x*zoomedUnit, -myFunction(x)*zoomedUnit); //<>//
   endShape();
   
   popMatrix();
