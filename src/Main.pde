@@ -1,4 +1,4 @@
-// Constants for colors //<>//
+// Constants for colors //<>// //<>//
 final color AXIS_COLOR = color(255);
 final color FUNCTION_COLOR = color(255,0,0);
 final color TEXT_COLOR = color(255);
@@ -60,10 +60,23 @@ void drawLegend() {
    int xBarlinesCount = floor(width/unit);
    int yBarlinesCount = floor(height/unit);
    
-   int textGap = 15;
+   final float textDistance = 15;
+   float xAxisTextPosition = textDistance;
+   float yAxisTextPosition = textDistance;
    int textSize = 12;
    textSize(textSize);
    textAlign(LEFT);
+   
+   if(screenLimits.left > 0)
+     yAxisTextPosition += screenLimits.left;
+   else if(screenLimits.right < 0)
+      yAxisTextPosition = -yAxisTextPosition + screenLimits.right;
+     
+  if(screenLimits.up < 0)
+    xAxisTextPosition += -screenLimits.up;
+  else if(screenLimits.down > 0)
+    xAxisTextPosition = -xAxisTextPosition - screenLimits.down;
+     
    
    fill(TEXT_COLOR);
    /*
@@ -81,10 +94,9 @@ void drawLegend() {
    float yDisplacement = ceil( (screenLimits.up-height/2) / unit );
    float maxY = (yBarlinesCount/2)+yDisplacement;
    float minY = maxY - yBarlinesCount-1;
-      
-  println(yDisplacement);    
-      
+            
    // Drawing grid
+   
    for(float i = minX; i <= maxX; i++) {
      if( i == 0) continue;
      
@@ -94,7 +106,7 @@ void drawLegend() {
      
      fill(TEXT_COLOR);
      String text = String.format("%.1f",i);
-     text(text, x-textWidth(text)/2, textGap);
+     text(text, x-textWidth(text)/2, xAxisTextPosition);
    }
     
   for(float i = minY; i <= maxY; i++) {
@@ -105,7 +117,8 @@ void drawLegend() {
     line(unit*minX, -y, unit*maxX, -y);
     
     fill(TEXT_COLOR);
-    text(String.format("%.1f", i), 0, -y+(textSize/4));
+    String text = String.format("%.1f", i);
+    text(text, (yAxisTextPosition<0) ? yAxisTextPosition-textWidth(text) : yAxisTextPosition, -y+(textSize/4));
   }
    
   popMatrix();
@@ -120,7 +133,7 @@ void drawZoomText() {
 void drawScreenLimitsText() {
 fill(LIMITS_COLOR);
 text(screenLimits.left, 0, height/2);
-text(screenLimits.right, width-50, height/2);
+text(screenLimits.right, width-50, height/2); //<>//
 text(screenLimits.up, width/2, 10);
 text(screenLimits.down, width/2, height-10);
 }
