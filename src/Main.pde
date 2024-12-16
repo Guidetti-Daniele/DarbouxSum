@@ -165,7 +165,7 @@ void drawRienmannSum() {
 void drawView() {
   background(0);
   
-  //drawZoomText();
+  drawZoomText();
   drawScreenLimitsText();
   drawAxis();
   drawLegend();
@@ -188,15 +188,15 @@ void draw() {
   
 }
 
-//void mouseWheel(MouseEvent event) {
+void mouseWheel(MouseEvent event) {
   
-//  if(event.getCount() > 0) // the wheel goes down
-//    zoom = (zoom-zoomAmount) < 0 ? 0 : (zoom-zoomAmount);
-//   else
-//    zoom += zoomAmount;
+  if(event.getCount() > 0) // the wheel goes down
+    zoom = (zoom-zoomAmount) < 0 ? 0 : (zoom-zoomAmount);
+  else
+    zoom += zoomAmount;
       
-//  drawView();  
-//}
+  drawView();  
+}
 
 Direction getDirection(float offsetX, float offsetY) {
   

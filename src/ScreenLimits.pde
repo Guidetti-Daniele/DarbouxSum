@@ -12,7 +12,10 @@ public class ScreenLimits {
   }
    
    public Point2D getOrigin() {
-     return new Point2D(-this.left,this.up);
+     float x = -this.left;
+     float y = this.up;
+ 
+     return new Point2D(x,y);
    }
    
    public void incrementX(float offset) {
