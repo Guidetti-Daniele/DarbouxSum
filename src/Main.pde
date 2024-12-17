@@ -59,7 +59,7 @@ void drawAxis() {
   line(0, origin.y, width, origin.y);
 }
 
-float getIncrementer(float numberOfZoomedUnits) {
+float getUnitValue(float numberOfZoomedUnits) {
 
   int numberOfUnitsWithNoZoom = ceil(width/unit);
   int numberOfTimesHalved = floor( log(numberOfZoomedUnits/numberOfUnitsWithNoZoom) / log(0.5) );
@@ -67,12 +67,12 @@ float getIncrementer(float numberOfZoomedUnits) {
 
   if (numberOfTimesHalved == 0) return 1.0;
 
-  float incrementer = 1.0;
+  float unitValue = 1.0;
   float[] ratios = {0.5, 0.2};
 
-  incrementer = (numberOfTimesHalved % 3 != 0) ? ratios[(numberOfTimesHalved % 3)-1] * pow(0.1, numberOfTimesHalved / 3) : pow(0.1, numberOfTimesHalved / 3);
+  unitValue = (numberOfTimesHalved % 3 != 0) ? ratios[(numberOfTimesHalved % 3)-1] * pow(0.1, numberOfTimesHalved / 3) : pow(0.1, numberOfTimesHalved / 3);
 
-  return incrementer;
+  return unitValue;
 }
 
 String generateFormatterPattern() {
@@ -89,8 +89,8 @@ void drawXLegend(int numberOfUnits, float xStartingPixels, float yStartingPixels
   textSize(textSize);
   textAlign(LEFT);
 
-  for (int i=0; i < numberOfUnits/unitValue; i++) {
-    float barlinePosition = xStartingPixels + unitPixels*unitValue*i;
+  for (int i=0; i < numberOfUnits; i++) {
+    float barlinePosition = xStartingPixels + unitPixels*i;
     String barlineText = unitFormatter.format(barlinePosition / unitPixels);
 
     if (barlineText.equals("0")) continue;
@@ -111,8 +111,8 @@ void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels
   textSize(textSize);
   textAlign(LEFT);
 
-  for (int i=0; i < numberOfUnits/unitValue; i++) {
-    float barlinePosition = yStartingPixels + unitPixels*unitValue*i;
+  for (int i=0; i < numberOfUnits; i++) {
+    float barlinePosition = yStartingPixels + unitPixels*i;
     String barlineText = unitFormatter.format(barlinePosition / unitPixels);
 
     if (barlineText.equals("0")) continue;
@@ -127,7 +127,12 @@ void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels
   }
 }
 
-
+float roundToTheNextMultiple(float number, float base) {
+  float previousMultiple = number - (number % base);
+  float nextMultiple = previousMultiple + (number>0 ? base : -base);
+  
+  return nextMultiple;
+}
 
 void drawLegend() {
   moveToOrigin();
@@ -157,7 +162,7 @@ void drawLegend() {
   int xBarlinesCount = ceil(width/zoomedUnit);
   int yBarlinesCount = ceil(height/zoomedUnit);
 
-  float incrementer = getIncrementer(xBarlinesCount);
+  float unitValue = getUnitValue(xBarlinesCount);
 
   String pattern = (unitDecimalPlaces != 0) ? generateFormatterPattern() : "#";
   unitFormatter.applyPattern(pattern);
@@ -180,18 +185,18 @@ void drawLegend() {
   //float minY = maxY - yBarlinesCount - 1;
 
   // Calculanting the starting and the ending values for each axis
-  float xStartingPixels = screenLimits.left - (screenLimits.left % (zoomedUnit*incrementer));
-  float xEndingPixels = xStartingPixels + zoomedUnit*incrementer*xBarlinesCount;
+  float xStartingPixels = roundToTheNextMultiple(screenLimits.left, zoomedUnit);
+  float xEndingPixels = roundToTheNextMultiple(screenLimits.right, zoomedUnit);
   
-  float yStartingPixels = -( screenLimits.up - (screenLimits.up % (zoomedUnit*incrementer)) );
-  float yEndingPixels = yStartingPixels + zoomedUnit*incrementer*yBarlinesCount;
+  float yStartingPixels = -roundToTheNextMultiple(screenLimits.up, zoomedUnit);
+  float yEndingPixels = -roundToTheNextMultiple(screenLimits.down, zoomedUnit);
 
-  //println("xStart: ", xStartingPixels, "xEnd: ", xEndingPixels);
-  //println("yStart: ", yStartingPixels, "End: ", yEndingPixels);
+  println("xStart: ", xStartingPixels / zoomedUnit, "xEnd: ", xEndingPixels / zoomedUnit);
+  println("yStart: ", yStartingPixels  / zoomedUnit, "End: ", yEndingPixels  / zoomedUnit);
 
   // Drawing grid
-  drawXLegend(xBarlinesCount, xStartingPixels, yStartingPixels, yEndingPixels, zoomedUnit, incrementer, textSize, xAxisTextPosition);
-  drawYLegend(yBarlinesCount, yStartingPixels, xStartingPixels, xEndingPixels, zoomedUnit, incrementer, textSize, yAxisTextPosition);
+  drawXLegend(xBarlinesCount+2, xStartingPixels, yStartingPixels, yEndingPixels, zoomedUnit, unitValue, textSize, xAxisTextPosition);
+  drawYLegend(yBarlinesCount+2, yStartingPixels, xStartingPixels, xEndingPixels, zoomedUnit, unitValue, textSize, yAxisTextPosition);
 
   //for (float i = minX; i <= maxX; i+= incrementer) {
   //  String formatted = unitFormatter.format(i);
