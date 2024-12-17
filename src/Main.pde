@@ -84,18 +84,61 @@ String generateFormatterPattern() {
   return pattern;
 }
 
+void drawXLegend(int numberOfUnits, float xStartingPixels, float yStartingPixels, float yEndingPixels, float unitPixels, float unitValue, float textSize, float verticalTextPosition) {
+  // Setting text parameters
+  textSize(textSize);
+  textAlign(LEFT);
+
+  for (int i=0; i < numberOfUnits/unitValue; i++) {
+    float barlinePosition = xStartingPixels + unitPixels*unitValue*i;
+    String barlineText = unitFormatter.format(barlinePosition / unitPixels);
+
+    if (barlineText.equals("0")) continue;
+
+    //Drawing the barline
+    stroke(GRID_COLOR);
+    line(barlinePosition, yStartingPixels, barlinePosition, yEndingPixels);
+
+    // Drawing the barline text
+    fill(TEXT_COLOR);
+    text(barlineText, barlinePosition-textWidth(barlineText)/2, verticalTextPosition);
+  }
+}
+
+
+void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels, float xEndingPixels, float unitPixels, float unitValue, float textSize, float horizontalTextPosition) {
+  // Setting text parameters
+  textSize(textSize);
+  textAlign(LEFT);
+
+  for (int i=0; i < numberOfUnits/unitValue; i++) {
+    float barlinePosition = yStartingPixels + unitPixels*unitValue*i;
+    String barlineText = unitFormatter.format(barlinePosition / unitPixels);
+
+    if (barlineText.equals("0")) continue;
+
+    //Drawing the barline
+    stroke(GRID_COLOR);
+    line(xStartingPixels, barlinePosition, xEndingPixels, barlinePosition);
+
+    // Drawing the barline text
+    fill(TEXT_COLOR);
+    text( barlineText, (horizontalTextPosition < 0) ? horizontalTextPosition - textWidth(barlineText) : horizontalTextPosition, barlinePosition+(textSize/4) );
+  }
+}
+
+
+
 void drawLegend() {
   moveToOrigin();
 
   /*
     I set up some parameters for the text in order to draw it correctly
    */
-  final float textDistance = 15;
+  final float textSize = 12f;
+  final float textDistance = 15f;
   float xAxisTextPosition = textDistance;
   float yAxisTextPosition = textDistance;
-  int textSize = 12;
-  textSize(textSize);
-  textAlign(LEFT);
 
   if (screenLimits.left > 0)
     yAxisTextPosition += screenLimits.left;
@@ -106,8 +149,6 @@ void drawLegend() {
     xAxisTextPosition += -screenLimits.up;
   else if (screenLimits.down > 0)
     xAxisTextPosition = -xAxisTextPosition - screenLimits.down;
-
-  fill(TEXT_COLOR);
 
   /*
    Now I get how many units I can draw into the screen
@@ -120,51 +161,65 @@ void drawLegend() {
 
   String pattern = (unitDecimalPlaces != 0) ? generateFormatterPattern() : "#";
   unitFormatter.applyPattern(pattern);
-  
+
+
   /*
     I know how many barlines I have to draw on the two axis,
    but I have to get the values of the bounds.
    */
-  float xDisplacement = (screenLimits.right-width/2) / zoomedUnit;
-  float maxX = ceil((xBarlinesCount/2)+xDisplacement);
-  float minX = maxX - xBarlinesCount - 1;
+  //float xDisplacement = (screenLimits.right-width/2) / zoomedUnit;
+  //float maxX = ceil((xBarlinesCount/2)+xDisplacement);
+  //float minX = maxX - xBarlinesCount - 1;
 
   /*
     Now I have to do the same for the y axis,
    but I have to INVERT THE SIGN
    */
-  float yDisplacement = (screenLimits.up-height/2) / zoomedUnit;
-  float maxY = ceil((yBarlinesCount/2)+yDisplacement);
-  float minY = maxY - yBarlinesCount - 1;
+  //float yDisplacement = (screenLimits.up-height/2) / zoomedUnit;
+  //float maxY = ceil((yBarlinesCount/2)+yDisplacement);
+  //float minY = maxY - yBarlinesCount - 1;
+
+  // Calculanting the starting and the ending values for each axis
+  float xStartingPixels = screenLimits.left - (screenLimits.left % (zoomedUnit*incrementer));
+  float xEndingPixels = xStartingPixels + zoomedUnit*incrementer*xBarlinesCount;
+  
+  float yStartingPixels = -( screenLimits.up - (screenLimits.up % (zoomedUnit*incrementer)) );
+  float yEndingPixels = yStartingPixels + zoomedUnit*incrementer*yBarlinesCount;
+
+  //println("xStart: ", xStartingPixels, "xEnd: ", xEndingPixels);
+  //println("yStart: ", yStartingPixels, "End: ", yEndingPixels);
 
   // Drawing grid
-  for (float i = minX; i <= maxX; i+= incrementer) {
-    String formatted = unitFormatter.format(i);
-    float formattedNumber = Float.valueOf( formatted.replace(',','.') );
-    
-    if (formattedNumber == 0.0) continue;
+  drawXLegend(xBarlinesCount, xStartingPixels, yStartingPixels, yEndingPixels, zoomedUnit, incrementer, textSize, xAxisTextPosition);
+  drawYLegend(yBarlinesCount, yStartingPixels, xStartingPixels, xEndingPixels, zoomedUnit, incrementer, textSize, yAxisTextPosition);
 
-    float x = zoomedUnit * formattedNumber;
-    stroke(GRID_COLOR);
-    line(x, -(zoomedUnit * maxY), x, -zoomedUnit*minY);
+  //for (float i = minX; i <= maxX; i+= incrementer) {
+  //  String formatted = unitFormatter.format(i);
+  //  float formattedNumber = Float.valueOf( formatted.replace(',','.') );
 
-    fill(TEXT_COLOR);
-    text(formatted, x-textWidth(formatted)/2, xAxisTextPosition);
-  }
+  //  if (formattedNumber == 0.0) continue;
 
-  for (float i = minY; i <= maxY; i+= incrementer) {
-    String formatted = unitFormatter.format(i);
-    float formattedNumber = Float.valueOf( formatted.replace(',','.') );
+  //  float x = zoomedUnit * formattedNumber;
+  //  stroke(GRID_COLOR);
+  //  line(x, -(zoomedUnit * maxY), x, -zoomedUnit*minY);
 
-    if (formattedNumber == 0.0) continue;
+  //  fill(TEXT_COLOR);
+  //  text(formatted, x-textWidth(formatted)/2, xAxisTextPosition);
+  //}
 
-    float y = zoomedUnit*formattedNumber;
-    stroke(GRID_COLOR);
-    line(zoomedUnit*minX, -y, zoomedUnit*maxX, -y);
+  //for (float i = minY; i <= maxY; i+= incrementer) {
+  //  String formatted = unitFormatter.format(i);
+  //  float formattedNumber = Float.valueOf( formatted.replace(',','.') );
 
-    fill(TEXT_COLOR);
-    text(formatted, (yAxisTextPosition<0) ? yAxisTextPosition-textWidth(formatted) : yAxisTextPosition, -y+(textSize/4));
-  }
+  //  if (formattedNumber == 0.0) continue;
+
+  //  float y = zoomedUnit*formattedNumber;
+  //  stroke(GRID_COLOR);
+  //  line(zoomedUnit*minX, -y, zoomedUnit*maxX, -y);
+
+  //  fill(TEXT_COLOR);
+  //  text(formatted, (yAxisTextPosition<0) ? yAxisTextPosition-textWidth(formatted) : yAxisTextPosition, -y+(textSize/4));
+  //}
 
   popMatrix();
 }
