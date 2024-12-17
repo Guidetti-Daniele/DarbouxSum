@@ -89,11 +89,11 @@ void drawXLegend(int numberOfUnits, float xStartingPixels, float yStartingPixels
   textSize(textSize);
   textAlign(LEFT);
 
-  for (int i=0; i < numberOfUnits; i++) {
-    float barlinePosition = xStartingPixels + unitPixels*i;
+  for (int i=0; i < numberOfUnits/unitValue; i++) {
+    float barlinePosition = xStartingPixels + unitPixels*unitValue*i;
     String barlineText = unitFormatter.format(barlinePosition / unitPixels);
 
-    if (barlineText.equals("0")) continue;
+    if (barlineText.equals("-0") || barlineText.equals("0") ) continue;
 
     //Drawing the barline
     stroke(GRID_COLOR);
@@ -111,11 +111,11 @@ void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels
   textSize(textSize);
   textAlign(LEFT);
 
-  for (int i=0; i < numberOfUnits; i++) {
-    float barlinePosition = yStartingPixels + unitPixels*i;
-    String barlineText = unitFormatter.format(barlinePosition / unitPixels);
+  for (int i=0; i < numberOfUnits/unitValue; i++) {
+    float barlinePosition = yStartingPixels + unitPixels*unitValue*i;
+    String barlineText = unitFormatter.format(-barlinePosition / unitPixels);
 
-    if (barlineText.equals("0")) continue;
+    if (barlineText.equals("-0") || barlineText.equals("0") ) continue;
 
     //Drawing the barline
     stroke(GRID_COLOR);
@@ -185,14 +185,14 @@ void drawLegend() {
   //float minY = maxY - yBarlinesCount - 1;
 
   // Calculanting the starting and the ending values for each axis
-  float xStartingPixels = roundToTheNextMultiple(screenLimits.left, zoomedUnit);
-  float xEndingPixels = roundToTheNextMultiple(screenLimits.right, zoomedUnit);
+  float xStartingPixels = roundToTheNextMultiple(screenLimits.left, zoomedUnit*unitValue);
+  float xEndingPixels = roundToTheNextMultiple(screenLimits.right, zoomedUnit*unitValue);
   
-  float yStartingPixels = -roundToTheNextMultiple(screenLimits.up, zoomedUnit);
-  float yEndingPixels = -roundToTheNextMultiple(screenLimits.down, zoomedUnit);
+  float yStartingPixels = -roundToTheNextMultiple(screenLimits.up, zoomedUnit*unitValue);
+  float yEndingPixels = -roundToTheNextMultiple(screenLimits.down, zoomedUnit*unitValue);
 
-  println("xStart: ", xStartingPixels / zoomedUnit, "xEnd: ", xEndingPixels / zoomedUnit);
-  println("yStart: ", yStartingPixels  / zoomedUnit, "End: ", yEndingPixels  / zoomedUnit);
+  //println("xStart: ", xStartingPixels / zoomedUnit, "xEnd: ", xEndingPixels / zoomedUnit);
+  //println("yStart: ", yStartingPixels  / zoomedUnit, "End: ", yEndingPixels  / zoomedUnit);
 
   // Drawing grid
   drawXLegend(xBarlinesCount+2, xStartingPixels, yStartingPixels, yEndingPixels, zoomedUnit, unitValue, textSize, xAxisTextPosition);
