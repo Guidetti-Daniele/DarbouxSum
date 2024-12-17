@@ -120,7 +120,7 @@ void drawLegend() {
 
   String pattern = (unitDecimalPlaces != 0) ? generateFormatterPattern() : "#";
   unitFormatter.applyPattern(pattern);
-
+  
   /*
     I know how many barlines I have to draw on the two axis,
    but I have to get the values of the bounds.
@@ -139,27 +139,31 @@ void drawLegend() {
 
   // Drawing grid
   for (float i = minX; i <= maxX; i+= incrementer) {
-    if (i == 0.0) continue;
+    String formatted = unitFormatter.format(i);
+    float formattedNumber = Float.valueOf( formatted.replace(',','.') );
+    
+    if (formattedNumber == 0.0) continue;
 
-    float x = zoomedUnit * i;
+    float x = zoomedUnit * formattedNumber;
     stroke(GRID_COLOR);
     line(x, -(zoomedUnit * maxY), x, -zoomedUnit*minY);
 
     fill(TEXT_COLOR);
-    String text = unitFormatter.format(i);
-    text(text, x-textWidth(text)/2, xAxisTextPosition);
+    text(formatted, x-textWidth(formatted)/2, xAxisTextPosition);
   }
 
   for (float i = minY; i <= maxY; i+= incrementer) {
-    if (i == 0.0) continue;
+    String formatted = unitFormatter.format(i);
+    float formattedNumber = Float.valueOf( formatted.replace(',','.') );
 
-    float y = zoomedUnit*i;
+    if (formattedNumber == 0.0) continue;
+
+    float y = zoomedUnit*formattedNumber;
     stroke(GRID_COLOR);
     line(zoomedUnit*minX, -y, zoomedUnit*maxX, -y);
 
     fill(TEXT_COLOR);
-    String text = unitFormatter.format(i);
-    text(text, (yAxisTextPosition<0) ? yAxisTextPosition-textWidth(text) : yAxisTextPosition, -y+(textSize/4));
+    text(formatted, (yAxisTextPosition<0) ? yAxisTextPosition-textWidth(formatted) : yAxisTextPosition, -y+(textSize/4));
   }
 
   popMatrix();
