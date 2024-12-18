@@ -67,15 +67,26 @@ float getUnitValue(float numberOfZoomedUnits) {
 
   if (numberOfTimesHalved == 0) return 1.0;
 
-  float unitValue = 1.0;
+  float unitValue = 1.0f;
   float[] ratios = {0.5, 0.2};
+  float multiplier = 0.1f;
+  
+  if(zoom < 1) {
+    ratios[0] = 2f;
+    ratios[1] = 5f;
+    multiplier = 10f;
+    numberOfTimesHalved = abs(numberOfTimesHalved);
+  }
 
-  unitValue = (numberOfTimesHalved % 3 != 0) ? ratios[(numberOfTimesHalved % 3)-1] * pow(0.1, numberOfTimesHalved / 3) : pow(0.1, numberOfTimesHalved / 3);
+  unitValue = (numberOfTimesHalved % 3 != 0) ? ratios[(numberOfTimesHalved % 3)-1] * pow(multiplier, numberOfTimesHalved / 3) : pow(multiplier, numberOfTimesHalved / 3);
 
   return unitValue;
 }
 
 String generateFormatterPattern() {
+  
+  if(unitDecimalPlaces <= 0) return "#";
+  
   String pattern = "#.";
 
   for (int i=0; i < unitDecimalPlaces; i++)
@@ -137,14 +148,13 @@ float roundToTheNextMultiple(float number, float base) {
 void drawLegend() {
   moveToOrigin();
 
-  /*
-    I set up some parameters for the text in order to draw it correctly
-   */
+  // I set up some parameters for the text in order to draw it correctly
   final float textSize = 12f;
   final float textDistance = 15f;
   float xAxisTextPosition = textDistance;
   float yAxisTextPosition = textDistance;
 
+  // I make the position of the legend sticky if the axis aren't in view
   if (screenLimits.left > 0)
     yAxisTextPosition += screenLimits.left;
   else if (screenLimits.right < 0)
@@ -155,34 +165,18 @@ void drawLegend() {
   else if (screenLimits.down > 0)
     xAxisTextPosition = -xAxisTextPosition - screenLimits.down;
 
-  /*
-   Now I get how many units I can draw into the screen
-   */
+  // Now I get how many units I can draw into the screen
+   
   float zoomedUnit = unit*zoom;
   int xBarlinesCount = ceil(width/zoomedUnit);
   int yBarlinesCount = ceil(height/zoomedUnit);
 
+  // I get the value of the unit
   float unitValue = getUnitValue(xBarlinesCount);
 
-  String pattern = (unitDecimalPlaces != 0) ? generateFormatterPattern() : "#";
+  // I set the formatting of the legend
+  String pattern = generateFormatterPattern();
   unitFormatter.applyPattern(pattern);
-
-
-  /*
-    I know how many barlines I have to draw on the two axis,
-   but I have to get the values of the bounds.
-   */
-  //float xDisplacement = (screenLimits.right-width/2) / zoomedUnit;
-  //float maxX = ceil((xBarlinesCount/2)+xDisplacement);
-  //float minX = maxX - xBarlinesCount - 1;
-
-  /*
-    Now I have to do the same for the y axis,
-   but I have to INVERT THE SIGN
-   */
-  //float yDisplacement = (screenLimits.up-height/2) / zoomedUnit;
-  //float maxY = ceil((yBarlinesCount/2)+yDisplacement);
-  //float minY = maxY - yBarlinesCount - 1;
 
   // Calculanting the starting and the ending values for each axis
   float xStartingPixels = roundToTheNextMultiple(screenLimits.left, zoomedUnit*unitValue);
@@ -191,40 +185,9 @@ void drawLegend() {
   float yStartingPixels = -roundToTheNextMultiple(screenLimits.up, zoomedUnit*unitValue);
   float yEndingPixels = -roundToTheNextMultiple(screenLimits.down, zoomedUnit*unitValue);
 
-  //println("xStart: ", xStartingPixels / zoomedUnit, "xEnd: ", xEndingPixels / zoomedUnit);
-  //println("yStart: ", yStartingPixels  / zoomedUnit, "End: ", yEndingPixels  / zoomedUnit);
-
   // Drawing grid
   drawXLegend(xBarlinesCount+2, xStartingPixels, yStartingPixels, yEndingPixels, zoomedUnit, unitValue, textSize, xAxisTextPosition);
   drawYLegend(yBarlinesCount+2, yStartingPixels, xStartingPixels, xEndingPixels, zoomedUnit, unitValue, textSize, yAxisTextPosition);
-
-  //for (float i = minX; i <= maxX; i+= incrementer) {
-  //  String formatted = unitFormatter.format(i);
-  //  float formattedNumber = Float.valueOf( formatted.replace(',','.') );
-
-  //  if (formattedNumber == 0.0) continue;
-
-  //  float x = zoomedUnit * formattedNumber;
-  //  stroke(GRID_COLOR);
-  //  line(x, -(zoomedUnit * maxY), x, -zoomedUnit*minY);
-
-  //  fill(TEXT_COLOR);
-  //  text(formatted, x-textWidth(formatted)/2, xAxisTextPosition);
-  //}
-
-  //for (float i = minY; i <= maxY; i+= incrementer) {
-  //  String formatted = unitFormatter.format(i);
-  //  float formattedNumber = Float.valueOf( formatted.replace(',','.') );
-
-  //  if (formattedNumber == 0.0) continue;
-
-  //  float y = zoomedUnit*formattedNumber;
-  //  stroke(GRID_COLOR);
-  //  line(zoomedUnit*minX, -y, zoomedUnit*maxX, -y);
-
-  //  fill(TEXT_COLOR);
-  //  text(formatted, (yAxisTextPosition<0) ? yAxisTextPosition-textWidth(formatted) : yAxisTextPosition, -y+(textSize/4));
-  //}
 
   popMatrix();
 }
@@ -311,7 +274,7 @@ void draw() {
 void mouseWheel(MouseEvent event) {
 
   if (event.getCount() > 0) // the wheel goes down
-    zoom = (zoom-zoomAmount) < 1 ? 1 : (zoom-zoomAmount);
+    zoom = (zoom-zoomAmount) < zoomAmount ? zoomAmount : (zoom-zoomAmount);
   else
     zoom += zoomAmount;
 
