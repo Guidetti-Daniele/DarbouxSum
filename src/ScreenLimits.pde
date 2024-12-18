@@ -11,8 +11,11 @@ public class ScreenLimits {
      this.left = (-(width/2));
   }
    
-   public Point2D getOrigin() {
-     return new Point2D(-this.left,this.up);
+   public PVector getOrigin() {
+     float x = -this.left;
+     float y = this.up;
+ 
+     return new PVector(x,y);
    }
    
    public void incrementX(float offset) {
