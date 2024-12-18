@@ -8,6 +8,14 @@ final color GRID_COLOR = color(255, 255, 255, 50);
 final color LIMITS_COLOR = color(0, 255, 0); // it will be removed
 final color LEFT_RECTANGULAR_COLOR = color(0, 255, 0);
 final color RIGHT_RECTANGULAR_COLOR = color(128, 0, 128);
+final color INFO_TEXT_COLOR = color(0,255, 255);
+
+// Constants for text
+final int ZOOM_TEXT_SIZE = 15;
+final int LEGEND_TEXT_SIZE = 12;
+final int RIENMANN_TEXT_SIZE = 15;
+
+final int LEGEND_TEXT_OFFSET = 15;
 
 // Variables to manage unit of measurementunit and zoom
 float unit = 50; // it means that 1 unit corresponds to 50px on the screen
@@ -96,9 +104,9 @@ String generateFormatterPattern() {
   return pattern;
 }
 
-void drawXLegend(int numberOfUnits, float xStartingPixels, float yStartingPixels, float yEndingPixels, float unitPixels, float unitValue, float textSize, float verticalTextPosition) {
+void drawXLegend(int numberOfUnits, float xStartingPixels, float yStartingPixels, float yEndingPixels, float unitPixels, float unitValue, float verticalTextPosition) {
   // Setting text parameters
-  textSize(textSize);
+  textSize(LEGEND_TEXT_SIZE);
   textAlign(LEFT);
 
   for (int i=0; i < numberOfUnits/unitValue; i++) {
@@ -118,9 +126,9 @@ void drawXLegend(int numberOfUnits, float xStartingPixels, float yStartingPixels
 }
 
 
-void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels, float xEndingPixels, float unitPixels, float unitValue, float textSize, float horizontalTextPosition) {
+void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels, float xEndingPixels, float unitPixels, float unitValue, float horizontalTextPosition) {
   // Setting text parameters
-  textSize(textSize);
+  textSize(LEGEND_TEXT_SIZE);
   textAlign(LEFT);
 
   for (int i=0; i < numberOfUnits/unitValue; i++) {
@@ -135,7 +143,7 @@ void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels
 
     // Drawing the barline text
     fill(TEXT_COLOR);
-    text( barlineText, (horizontalTextPosition < 0) ? horizontalTextPosition - textWidth(barlineText) : horizontalTextPosition, barlinePosition+(textSize/4) );
+    text( barlineText, (horizontalTextPosition < 0) ? horizontalTextPosition - textWidth(barlineText) : horizontalTextPosition, barlinePosition+(LEGEND_TEXT_SIZE/4) );
   }
 }
 
@@ -150,10 +158,8 @@ void drawLegend() {
   moveToOrigin();
 
   // I set up some parameters for the text in order to draw it correctly
-  final float textSize = 12f;
-  final float textDistance = 15f;
-  float xAxisTextPosition = textDistance;
-  float yAxisTextPosition = textDistance;
+  float xAxisTextPosition = LEGEND_TEXT_OFFSET;
+  float yAxisTextPosition = LEGEND_TEXT_OFFSET;
 
   // I make the position of the legend sticky if the axis aren't in view
   if (screenLimits.left > 0)
@@ -187,8 +193,8 @@ void drawLegend() {
   float yEndingPixels = -roundToTheNextMultiple(screenLimits.down, zoomedUnit*unitValue);
 
   // Drawing grid
-  drawXLegend(xBarlinesCount+2, xStartingPixels, yStartingPixels, yEndingPixels, zoomedUnit, unitValue, textSize, xAxisTextPosition);
-  drawYLegend(yBarlinesCount+2, yStartingPixels, xStartingPixels, xEndingPixels, zoomedUnit, unitValue, textSize, yAxisTextPosition);
+  drawXLegend(xBarlinesCount+2, xStartingPixels, yStartingPixels, yEndingPixels, zoomedUnit, unitValue, xAxisTextPosition);
+  drawYLegend(yBarlinesCount+2, yStartingPixels, xStartingPixels, xEndingPixels, zoomedUnit, unitValue, yAxisTextPosition);
 
   popMatrix();
 }
@@ -196,6 +202,7 @@ void drawLegend() {
 void drawZoomText() {
   String text = String.format("Zoom: %d %%", round(100*zoom));
   fill(TEXT_COLOR);
+  textSize(ZOOM_TEXT_SIZE);
   text(text, 40, 40);
 }
 
@@ -276,12 +283,11 @@ void drawRienmannSum() {
     lowerArea += rectWidth * lowerRectHeight;
   }
 
-  println("Upper area: ", upperArea);
-  println("Lower area: ", lowerArea);
-
   // Drawing all the info
-  fill(TEXT_COLOR);
-  text(n, (upperBound*zoom)+10, -(lowerRectHeight+10));
+  fill(INFO_TEXT_COLOR);
+  textSize(15);
+  String text = String.format("n = %d \nArea rettangoli verdi = %f \nArea rettangoli viola = %f", n, lowerArea, upperArea);
+  text(text, (upperBound*zoomedUnit)+10, -(lowerRectHeight*zoomedUnit+10));
 
   popMatrix();
 }
