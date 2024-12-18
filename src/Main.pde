@@ -206,6 +206,7 @@ void drawZoomText() {
   text(text, 40, 40);
 }
 
+// This function was used to debug 
 //void drawScreenLimitsText() {
 //  fill(LIMITS_COLOR);
 //  text(screenLimits.left, 0, height/2);
@@ -229,29 +230,6 @@ void drawMyFunction() {
 
   popMatrix();
 }
-
-//void drawRienmannSum() {
-//  float rectWidth = zoom*(upperBound-lowerBound)/n;
-//  float rectHeight = 0;
-
-//  moveToOrigin();
-
-//  noStroke();
-//  fill(RECTANGULAR_COLOR);
-//  rectMode(CENTER);
-
-//  for (float i=lowerBound*zoom; i <= upperBound*zoom; i+= rectWidth) {
-//    float middleX = i+(rectWidth/2);
-//    rectHeight = myFunction(i/zoom);
-//    rect(middleX, (-rectHeight)/2, rectWidth, rectHeight);
-//  }
-
-//  String text = String.format("n=%d", n);
-//  fill(255);
-//  text(text, (upperBound*zoom)+10, -(rectHeight+10));
-
-//  popMatrix();
-//}
 
 void drawRienmannSum() {
   float rectWidth = (upperBound-lowerBound)/n;
@@ -285,7 +263,7 @@ void drawRienmannSum() {
 
   // Drawing all the info
   fill(INFO_TEXT_COLOR);
-  textSize(15);
+  textSize(RIENMANN_TEXT_SIZE);
   String text = String.format("n = %d \nArea rettangoli verdi = %f \nArea rettangoli viola = %f", n, lowerArea, upperArea);
   text(text, (upperBound*zoomedUnit)+10, -(lowerRectHeight*zoomedUnit+10));
 
