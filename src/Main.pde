@@ -5,8 +5,9 @@ final color AXIS_COLOR = color(255);
 final color FUNCTION_COLOR = color(255, 0, 0);
 final color TEXT_COLOR = color(255);
 final color GRID_COLOR = color(255, 255, 255, 50);
-final color RECTANGULAR_COLOR = color(0, 255, 0);
 final color LIMITS_COLOR = color(0, 255, 0); // it will be removed
+final color LEFT_RECTANGULAR_COLOR = color(0, 255, 0);
+final color RIGHT_RECTANGULAR_COLOR = color(128, 0, 128);
 
 // Variables to manage unit of measurementunit and zoom
 float unit = 50; // it means that 1 unit corresponds to 50px on the screen
@@ -20,7 +21,7 @@ float zoomAmount = 0.1;
 ScreenLimits screenLimits;
 
 float dragSensibility = 0.1;
-Point2D dragPivotPoint;
+PVector dragPivotPoint;
 
 enum Direction {
   UP_RIGHT,
@@ -34,7 +35,7 @@ Direction dragDirection;
 // Variables to implement Rienmann's sum
 int n = 10;
 float lowerBound = 0;
-float upperBound = 10;
+float upperBound = 2;
 
 final char plusButton = '+';
 final char minusButton = '-';
@@ -45,14 +46,14 @@ float myFunction(float x) {
 
 void moveToOrigin() {
   pushMatrix();
-  Point2D origin = screenLimits.getOrigin();
+  PVector origin = screenLimits.getOrigin();
   translate(origin.x, origin.y);
 }
 
 void drawAxis() {
   stroke(AXIS_COLOR);
 
-  Point2D origin = screenLimits.getOrigin();
+  PVector origin = screenLimits.getOrigin();
   // y-axis
   line(origin.x, 0, origin.x, height);
   // x-axis
@@ -70,8 +71,8 @@ float getUnitValue(float numberOfZoomedUnits) {
   float unitValue = 1.0f;
   float[] ratios = {0.5, 0.2};
   float multiplier = 0.1f;
-  
-  if(zoom < 1) {
+
+  if (zoom < 1) {
     ratios[0] = 2f;
     ratios[1] = 5f;
     multiplier = 10f;
@@ -84,9 +85,9 @@ float getUnitValue(float numberOfZoomedUnits) {
 }
 
 String generateFormatterPattern() {
-  
-  if(unitDecimalPlaces <= 0) return "#";
-  
+
+  if (unitDecimalPlaces <= 0) return "#";
+
   String pattern = "#.";
 
   for (int i=0; i < unitDecimalPlaces; i++)
@@ -141,7 +142,7 @@ void drawYLegend(int numberOfUnits, float yStartingPixels, float xStartingPixels
 float roundToTheNextMultiple(float number, float base) {
   float previousMultiple = number - (number % base);
   float nextMultiple = previousMultiple + (number>0 ? base : -base);
-  
+
   return nextMultiple;
 }
 
@@ -166,7 +167,7 @@ void drawLegend() {
     xAxisTextPosition = -xAxisTextPosition - screenLimits.down;
 
   // Now I get how many units I can draw into the screen
-   
+
   float zoomedUnit = unit*zoom;
   int xBarlinesCount = ceil(width/zoomedUnit);
   int yBarlinesCount = ceil(height/zoomedUnit);
@@ -181,7 +182,7 @@ void drawLegend() {
   // Calculanting the starting and the ending values for each axis
   float xStartingPixels = roundToTheNextMultiple(screenLimits.left, zoomedUnit*unitValue);
   float xEndingPixels = roundToTheNextMultiple(screenLimits.right, zoomedUnit*unitValue);
-  
+
   float yStartingPixels = -roundToTheNextMultiple(screenLimits.up, zoomedUnit*unitValue);
   float yEndingPixels = -roundToTheNextMultiple(screenLimits.down, zoomedUnit*unitValue);
 
@@ -198,13 +199,13 @@ void drawZoomText() {
   text(text, 40, 40);
 }
 
-void drawScreenLimitsText() {
-  fill(LIMITS_COLOR);
-  text(screenLimits.left, 0, height/2);
-  text(screenLimits.right, width-50, height/2);
-  text(screenLimits.up, width/2, 10);
-  text(screenLimits.down, width/2, height-10);
-}
+//void drawScreenLimitsText() {
+//  fill(LIMITS_COLOR);
+//  text(screenLimits.left, 0, height/2);
+//  text(screenLimits.right, width-50, height/2);
+//  text(screenLimits.up, width/2, 10);
+//  text(screenLimits.down, width/2, height-10);
+//}
 
 void drawMyFunction() {
   moveToOrigin();
@@ -222,25 +223,65 @@ void drawMyFunction() {
   popMatrix();
 }
 
+//void drawRienmannSum() {
+//  float rectWidth = zoom*(upperBound-lowerBound)/n;
+//  float rectHeight = 0;
+
+//  moveToOrigin();
+
+//  noStroke();
+//  fill(RECTANGULAR_COLOR);
+//  rectMode(CENTER);
+
+//  for (float i=lowerBound*zoom; i <= upperBound*zoom; i+= rectWidth) {
+//    float middleX = i+(rectWidth/2);
+//    rectHeight = myFunction(i/zoom);
+//    rect(middleX, (-rectHeight)/2, rectWidth, rectHeight);
+//  }
+
+//  String text = String.format("n=%d", n);
+//  fill(255);
+//  text(text, (upperBound*zoom)+10, -(rectHeight+10));
+
+//  popMatrix();
+//}
+
 void drawRienmannSum() {
-  float rectWidth = zoom*(upperBound-lowerBound)/n;
-  float rectHeight = 0;
+  float rectWidth = (upperBound-lowerBound)/n;
+  float lowerRectHeight = 0;
+  float upperRectHeight = 0;
+
+  float lowerArea = 0;
+  float upperArea = 0;
 
   moveToOrigin();
 
   noStroke();
-  fill(RECTANGULAR_COLOR);
   rectMode(CENTER);
+  float zoomedUnit = unit*zoom;
 
-  for (float i=lowerBound*zoom; i <= upperBound*zoom; i+= rectWidth) {
-    float middleX = i+(rectWidth/2);
-    rectHeight = myFunction(i/zoom);
-    rect(middleX, (-rectHeight)/2, rectWidth, rectHeight);
+  for (float i=0; i<n; i++) {
+    float middleX = ((lowerBound+(rectWidth*i))+rectWidth/2);
+
+    fill(RIGHT_RECTANGULAR_COLOR);
+    float bottomRightX = lowerBound+(rectWidth*(i+1));
+    upperRectHeight = myFunction(bottomRightX);
+    rect(middleX*zoomedUnit, (-upperRectHeight*zoomedUnit)/2, rectWidth*zoomedUnit, upperRectHeight*zoomedUnit);
+    upperArea += rectWidth * upperRectHeight;
+
+    fill(LEFT_RECTANGULAR_COLOR);
+    float bottomLeftX = lowerBound+(rectWidth*i);
+    lowerRectHeight = myFunction(bottomLeftX);
+    rect(middleX*zoomedUnit, (-lowerRectHeight*zoomedUnit)/2, rectWidth*zoomedUnit, lowerRectHeight*zoomedUnit);
+    lowerArea += rectWidth * lowerRectHeight;
   }
 
-  String text = String.format("n=%d", n);
-  fill(255);
-  text(text, (upperBound*zoom)+10, -(rectHeight+10));
+  println("Upper area: ", upperArea);
+  println("Lower area: ", lowerArea);
+
+  // Drawing all the info
+  fill(TEXT_COLOR);
+  text(n, (upperBound*zoom)+10, -(lowerRectHeight+10));
 
   popMatrix();
 }
@@ -249,11 +290,11 @@ void drawView() {
   background(0);
 
   drawZoomText();
-  drawScreenLimitsText();
+  //drawScreenLimitsText();
   drawAxis();
   drawLegend();
   drawMyFunction();
-  //drawRienmannSum();
+  drawRienmannSum();
 }
 
 void setup() {
@@ -267,7 +308,7 @@ void setup() {
 void draw() {
 
   if (mousePressed) {
-    dragPivotPoint = new Point2D(mouseX, mouseY);
+    dragPivotPoint = new PVector(mouseX, mouseY);
   }
 }
 
