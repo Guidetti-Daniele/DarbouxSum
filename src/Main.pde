@@ -6,14 +6,14 @@ final color FUNCTION_COLOR = color(255, 0, 0);
 final color TEXT_COLOR = color(255);
 final color GRID_COLOR = color(255, 255, 255, 50);
 final color LIMITS_COLOR = color(0, 255, 0); // it will be removed
-final color LEFT_RECTANGULAR_COLOR = color(0, 255, 0, 80);
-final color RIGHT_RECTANGULAR_COLOR = color(128, 0, 128, 160);
-final color INFO_TEXT_COLOR = color(0,255, 255);
+final color LOWER_RECTANGLE_COLOR = color(0, 255, 0, 80);
+final color UPPER_RECTANGLE_COLOR = color(128, 0, 128, 160);
+final color INFO_TEXT_COLOR = color(0, 255, 255);
 
 // Constants for text
 final int ZOOM_TEXT_SIZE = 15;
 final int LEGEND_TEXT_SIZE = 12;
-final int RIENMANN_TEXT_SIZE = 15;
+final int DARBOUX_TEXT_SIZE = 15;
 
 final int LEGEND_TEXT_OFFSET = 15;
 
@@ -40,7 +40,7 @@ enum Direction {
 
 Direction dragDirection;
 
-// Variables to implement Rienmann's sum
+// Variables to implement Darboux's sum
 int n = 10;
 float lowerBound = 0;
 float upperBound = 40;
@@ -49,7 +49,7 @@ final char plusButton = '+';
 final char minusButton = '-';
 
 float myFunction(float x) {
-  return -0.1*pow(x,2)+5*x+3;
+  return -0.1*pow(x, 2)+5*x+3;
 }
 
 void moveToOrigin() {
@@ -206,7 +206,7 @@ void drawZoomText() {
   text(text, 40, 40);
 }
 
-// This function was used to debug 
+// This function was used to debug
 //void drawScreenLimitsText() {
 //  fill(LIMITS_COLOR);
 //  text(screenLimits.left, 0, height/2);
@@ -224,48 +224,69 @@ void drawMyFunction() {
   float zoomedUnit = unit*zoom;
 
   beginShape();
-  for ( float x = screenLimits.left/zoomedUnit; x <= screenLimits.right/zoomedUnit; x+= (1/zoomedUnit))
+  for ( float x = screenLimits.left/zoomedUnit; x <= screenLimits.right/zoomedUnit; x += 1/zoomedUnit)
     vertex(x*zoomedUnit, -myFunction(x)*zoomedUnit);
   endShape();
 
   popMatrix();
 }
 
-void drawRienmannSum() {
-  float rectWidth = (upperBound-lowerBound)/n;
-  float lowerRectHeight = 0;
-  float upperRectHeight = 0;
+float[] getMinAndMaxInInterval(float a, float b) {
+  float max = Float.NEGATIVE_INFINITY;
+  float min = Float.POSITIVE_INFINITY;
 
-  float lowerArea = 0;
-  float upperArea = 0;
+  for (float x=a; x <= b; x += 1/(unit*zoom)) {
+    float y = myFunction(x);
+
+    if (y > max)
+      max = y;
+
+    if (y < min)
+      min = y;
+  }
+
+  return new float[] {min, max};
+}
+
+void drawDarbouxSum() {
+  float rectWidth = (upperBound-lowerBound)/n;
+  
+  float lowerArea = 0f;
+  float upperArea = 0f;
+  float min = 0f;
+  float max = 0f;
 
   moveToOrigin();
 
-  noStroke();
-  rectMode(CENTER);
   float zoomedUnit = unit*zoom;
 
+  // Default rect mode is CORNER, so I have to specify the upperLeft corner for each rectangle
   for (float i=0; i<n; i++) {
-    float middleX = ((lowerBound+(rectWidth*i))+rectWidth/2);
+    // Getting the bounds of the interval
+    float a = lowerBound+rectWidth*i;
+    float b = a + rectWidth;
 
-    fill(RIGHT_RECTANGULAR_COLOR);
-    float bottomRightX = lowerBound+(rectWidth*(i+1));
-    upperRectHeight = myFunction(bottomRightX);
-    rect(middleX*zoomedUnit, (-upperRectHeight*zoomedUnit)/2, rectWidth*zoomedUnit, upperRectHeight*zoomedUnit);
-    upperArea += rectWidth * upperRectHeight;
+    // Getting the min and max values for y in the interval
+    float[] minAndMax = getMinAndMaxInInterval(a, b);
+    min = minAndMax[0];
+    max = minAndMax[1];
 
-    fill(LEFT_RECTANGULAR_COLOR);
-    float bottomLeftX = lowerBound+(rectWidth*i);
-    lowerRectHeight = myFunction(bottomLeftX);
-    rect(middleX*zoomedUnit, (-lowerRectHeight*zoomedUnit)/2, rectWidth*zoomedUnit, lowerRectHeight*zoomedUnit);
-    lowerArea += rectWidth * lowerRectHeight;
+    stroke(UPPER_RECTANGLE_COLOR);
+    fill(UPPER_RECTANGLE_COLOR);
+    rect(a*zoomedUnit, -max*zoomedUnit, rectWidth*zoomedUnit, max*zoomedUnit);
+    upperArea += rectWidth * max;
+
+    stroke(LOWER_RECTANGLE_COLOR);
+    fill(LOWER_RECTANGLE_COLOR);
+    rect(a*zoomedUnit, -min*zoomedUnit, rectWidth*zoomedUnit, min*zoomedUnit);
+    lowerArea += rectWidth * min;
   }
 
   // Drawing all the info
   fill(INFO_TEXT_COLOR);
-  textSize(RIENMANN_TEXT_SIZE);
-  String text = String.format("n = %d \nArea rettangoli verdi = %f \nArea rettangoli viola = %f", n, lowerArea, upperArea);
-  text(text, (upperBound*zoomedUnit)+10, -(lowerRectHeight*zoomedUnit+10));
+  textSize(DARBOUX_TEXT_SIZE);
+  String text = String.format("n = %d \nArea somma inferiore = %f \nArea somma superiore = %f", n, lowerArea, upperArea);
+  text(text, (upperBound*zoomedUnit)+10, -(max*zoomedUnit+10));
 
   popMatrix();
 }
@@ -277,8 +298,8 @@ void drawView() {
   //drawScreenLimitsText();
   drawAxis();
   drawLegend();
+  drawDarbouxSum();
   drawMyFunction();
-  drawRienmannSum();
 }
 
 void setup() {
