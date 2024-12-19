@@ -6,8 +6,8 @@ final color FUNCTION_COLOR = color(255, 0, 0);
 final color TEXT_COLOR = color(255);
 final color GRID_COLOR = color(255, 255, 255, 50);
 final color LIMITS_COLOR = color(0, 255, 0); // it will be removed
-final color LEFT_RECTANGULAR_COLOR = color(0, 255, 0);
-final color RIGHT_RECTANGULAR_COLOR = color(128, 0, 128);
+final color LEFT_RECTANGULAR_COLOR = color(0, 255, 0, 80);
+final color RIGHT_RECTANGULAR_COLOR = color(128, 0, 128, 160);
 final color INFO_TEXT_COLOR = color(0,255, 255);
 
 // Constants for text
@@ -43,13 +43,13 @@ Direction dragDirection;
 // Variables to implement Rienmann's sum
 int n = 10;
 float lowerBound = 0;
-float upperBound = 2;
+float upperBound = 40;
 
 final char plusButton = '+';
 final char minusButton = '-';
 
 float myFunction(float x) {
-  return x*x;
+  return -0.1*pow(x,2)+5*x+3;
 }
 
 void moveToOrigin() {
